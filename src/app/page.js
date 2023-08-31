@@ -19,7 +19,7 @@ import {
 } from "@mantine/core";
 import { useForm, zodResolver } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
-import { z } from "zod";
+import { boolean, z } from "zod";
 import { runningPlans } from "../libs/runningPlans";
 
 const schema = z
@@ -44,7 +44,10 @@ const schema = z
     }),
     hasCoupon: z.boolean(),
     coupon: z.string(),
-    password: z.string(),
+    password: z
+      .string()
+      .min(6, { message: "Password must contains at lease 6 characters" })
+      .max(12, { message: "Password must not exceed than 12 characters" }),
     confirmPassword: z.string(),
   })
   .refine(
@@ -62,6 +65,16 @@ const schema = z
     {
       message: "Invalid coupon code",
       path: ["coupon"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.password !== data.confirmPassword) return false;
+      return true;
+    },
+    {
+      message: "Passwords don't match",
+      path: ["confirmPassword"],
     }
   );
 
@@ -90,9 +103,12 @@ export default function Home() {
     //TIP : get value of currently filled form with variable "form.values"
 
     if (form.values.plan === "funrun") price = 500;
+    if (form.values.plan === "mini") price = 800;
+    if (form.values.plan === "half") price = 1200;
+    if (form.values.plan === "full") price = 1500;
     //check the rest plans by yourself
     //TIP : check /src/app/libs/runningPlans.js
-
+    if (form.values.coupon === "CMU2023") price *= 0.7;
     //check discount here
 
     return price;
@@ -175,7 +191,11 @@ export default function Home() {
           </Stack>
         </form>
 
-        <Footer year={2023} fullName="Chayanin Suatap" studentId="650610560" />
+        <Footer
+          year={2023}
+          fullName="Natthapon Chanveroj"
+          studentId="650612082"
+        />
       </Container>
 
       <TermsAndCondsModal opened={opened} close={close} />
